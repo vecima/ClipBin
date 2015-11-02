@@ -1,0 +1,2 @@
+# ClipBin
+Simple Clipboard Management
