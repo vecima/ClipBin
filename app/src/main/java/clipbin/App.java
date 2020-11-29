@@ -1,20 +1,12 @@
 package clipbin;
 
-import java.io.InputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-import org.jnativehook.keyboard.NativeKeyEvent;
 
 public class App extends Application {
 
@@ -22,8 +14,11 @@ public class App extends Application {
 	private static final String CLIPS_PATH = "clips";
 
 	private EventRouter eventRouter;
-	private ClipBin clipBin;
 	private UserInterface userInterface;
+	private ClipBin clipBin;
+	private boolean listenToClipboard;
+	private Thread clipboardListeningThread;
+	private Clip lastClipboardContents;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -45,74 +40,56 @@ public class App extends Application {
 				System.err.format("IOException: %s%n", x);
 			}
 		}
-		//this.eventRouter.registerHandler(null, this); // null type means all events
 
 		this.clipBin = new ClipBin(this.eventRouter, path);
 
-		// COPY Key Combo
-		Set<Integer> copyKeys = new HashSet<Integer>();
-		copyKeys.add(NativeKeyEvent.VC_CONTROL);
-		copyKeys.add(NativeKeyEvent.VC_C);
-		KeyComboListener copyKeyComboListener = new KeyComboListener(copyKeys, new KeyTriggerable()
-		{
-			@Override
-			public void trigger()
-			{
-				try
-				{
-					Thread.sleep(100);
-					Clip clip = ClipboardManager.getClipboardContents();
-					
-					boolean duplicate = false;
-					for (Clip existingClip : App.this.clipBin.getClipList())
-					{
-						//System.out.println("checking " + clip.getDisplay(0) + " against " + existingClip.getDisplay(0));
-						if (clip.getDisplay(0).equals(existingClip.getDisplay(0)))
-							duplicate = true;
-					}
+		this.listenToClipboard = true;
+		this.lastClipboardContents = ClipboardManager.getClipboardContents();
+		this.clipboardListeningThread = new Thread(() -> {
+			while (this.listenToClipboard) {
+				try {
+					Thread.sleep(500);
 
-					if (!duplicate)
-					{
-						if (clip.save(path)) {
-							Event addedClipEvent = new Event(EventType.ADD_CLIP, clip);
-							eventRouter.sendEvent(addedClipEvent);
+					Clip clip = ClipboardManager.getClipboardContents();						
+					boolean duplicate = false;
+					if (this.lastClipboardContents != null && this.lastClipboardContents.getDisplay(0).equals(clip.getDisplay(0)))
+						duplicate = true;
+
+					if (!duplicate) {
+						for (Clip existingClip : this.clipBin.getClipList()) {
+							//System.out.println("checking " + clip.getDisplay(0) + " against " + existingClip.getDisplay(0));
+							if (clip.getDisplay(0).equals(existingClip.getDisplay(0)))
+								duplicate = true;
 						}
 					}
-				}
-				catch (InterruptedException ie)
-				{
+
+					if (!duplicate) {
+						if (clip.save(path)) {
+							this.lastClipboardContents = clip;
+							Event addedClipEvent = new Event(EventType.ADD_CLIP, clip);
+							eventRouter.sendEvent(addedClipEvent);
+						} else {
+							AlertBox.display("Error", "The clip could not be saved. ClipBin has stopped watching the clipboard and should be restarted.");
+							this.listenToClipboard = false;
+						}
+					}
+				} catch (InterruptedException ie) {
 					ie.printStackTrace();
 				}
 			}
+			System.out.println("Thread exiting");
 		});
-
+		this.clipboardListeningThread.setDaemon(true);
+		this.clipboardListeningThread.start();
 	}
 
-	private static void close(Stage stage, javafx.event.Event event) {
+	private void close(Stage stage, javafx.event.Event event) {
 		event.consume();
 		boolean result = ConfirmBox.display("Confirm", "Are you sure you want to exit ClipBin?");
 		if (result) {
-			System.out.println("Closing...");
-
-			try
-			{
-				if (GlobalScreen.isNativeHookRegistered())
-					GlobalScreen.unregisterNativeHook();
-			}
-			catch (NativeHookException nhe)
-			{
-				System.err.println("There was a problem unregistering the native hook.");
-				System.err.println(nhe.getMessage());
-
-				nhe.printStackTrace();
-			}
-			finally
-			{
-				System.out.println("ClipBin closed.");
-			}
-
+			this.listenToClipboard = false;
+			System.out.println("Closing App...");
 			stage.close();
-			//System.exit(0);
 		}
 	}
 }
