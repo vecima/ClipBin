@@ -77,8 +77,7 @@ public class UserInterface implements EventHandler {
 			deleteButton.setOnAction(e -> {
 				boolean result = ConfirmBox.display("Confirm", "Are you sure you want to delete this Clip?");
 				if (result) {
-					System.out.println("starting delete clip thread from UI: " + clip.getDisplay(0));
-
+					//System.out.println("starting delete clip thread from UI: " + clip.getDisplay(0));
 					// longrunning operation runs on different thread
 					Thread thread = new Thread(() -> {
 						//Thread.sleep(1000);

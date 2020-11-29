@@ -77,7 +77,7 @@ public class App extends Application {
 					ie.printStackTrace();
 				}
 			}
-			System.out.println("Thread exiting");
+			System.out.println("Clipboard listening Thread exiting.");
 		});
 		this.clipboardListeningThread.setDaemon(true);
 		this.clipboardListeningThread.start();
