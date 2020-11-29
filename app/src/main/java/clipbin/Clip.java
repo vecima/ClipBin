@@ -13,9 +13,6 @@ import java.util.List;
 
 public class Clip implements Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1319251539882468369L;
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH-mm-ss");
 
@@ -33,21 +30,21 @@ public class Clip implements Serializable
 
 	public Clip(String pStringData)
 	{
-		System.out.println("clip created from string.");
+		//System.out.println("clip created from string.");
 		this.fClipType = ClipType.STRING;
 		this.fStringData = pStringData;
 	}
 
 	public Clip(Image pImageData)
 	{
-		System.out.println("clip created from image.");
+		//System.out.println("clip created from image.");
 		this.fClipType = ClipType.IMAGE;
 		this.fImageData = pImageData;
 	}
 
 	public Clip(List<Path> pPathData)
 	{
-		System.out.println("clip created from Paths.");
+		//System.out.println("clip created from Paths.");
 		this.fClipType = ClipType.FILE_LIST;
 		this.fPathData = pPathData;
 	}
@@ -63,7 +60,7 @@ public class Clip implements Serializable
 				//out.writeObject(this);
 
 			} else if (ClipType.FILE_LIST.equals(this.getClipType())) {
-				// doesn't work yet because I think jnative hook really want to use java.io.Files (not nio)
+				// doesn't work yet because I think the awt clipboard toolkit really want to use java.io.Files (not nio)
 				// maybe I can translate the data somewhere
 			} else {
 				out.writeObject(this);
@@ -80,9 +77,7 @@ public class Clip implements Serializable
 	public boolean delete()
 	{
 		try {
-			System.out.println("deleting clip from file system: " + this.getDisplay(0));
 			Files.delete(this.fClipPath);
-			System.out.println("deleted clip from file system: " + this.getDisplay(0));
 			return true;
 		} catch (IOException x) {
 			x.printStackTrace();

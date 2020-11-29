@@ -3,10 +3,8 @@ package clipbin;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -54,15 +52,15 @@ public class ClipBin implements EventHandler
 
 	public List<Clip> getClipList()
 	{
-		return clipList;
+		return this.clipList;
 	}
 
 	@Override
 	public void handle (Event event) {
 		if (EventType.ADD_CLIP.equals(event.getEventType())) {
-			clipList.add(event.getClip());
+			this.clipList.add(event.getClip());
 		} else if (EventType.REMOVE_CLIP.equals(event.getEventType())) {
-			clipList.remove(event.getClip());
+			this.clipList.remove(event.getClip());
 		}
 	}
 }

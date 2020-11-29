@@ -14,23 +14,23 @@ public class EventRouter {
 	private final Map<EventType, List<EventHandler>> handlerMap = new HashMap<EventType, List<EventHandler>> ();
 
 	public void sendEvent (final Event event) {
-		if (handlerMap.containsKey(event.getEventType()))
-			handlerMap.get (event.getEventType()).forEach(eventHandler -> eventHandler.handle(event));
-		if (handlerMap.containsKey(null))
-			handlerMap.get (null).forEach(eventHandler -> eventHandler.handle(event));
+		if (this.handlerMap.containsKey(event.getEventType()))
+			this.handlerMap.get (event.getEventType()).forEach(eventHandler -> eventHandler.handle(event));
+		if (this.handlerMap.containsKey(null))
+			this.handlerMap.get (null).forEach(eventHandler -> eventHandler.handle(event));
 	}
 
 	public void registerHandler (final EventType eventType, final EventHandler handler) {
-		List<EventHandler> handlerList = handlerMap.get(eventType);
+		List<EventHandler> handlerList = this.handlerMap.get(eventType);
 		if (handlerList == null) {
 			handlerList = new ArrayList<EventHandler>();
-			handlerMap.put(eventType, handlerList);
+			this.handlerMap.put(eventType, handlerList);
 		}
 		handlerList.add(handler);
 	}
 
 	public void unRegisterHandler (final EventType eventType, final EventHandler handler) {
-		List<EventHandler> handlerList = handlerMap.get(eventType);
+		List<EventHandler> handlerList = this.handlerMap.get(eventType);
 		if (handlerList != null) {
 			handlerList.remove(handler);
 		}

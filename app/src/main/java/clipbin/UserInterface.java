@@ -1,9 +1,7 @@
 package clipbin;
 
 import java.io.InputStream;
-import java.util.List;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,7 +21,7 @@ import javafx.stage.Stage;
 public class UserInterface implements EventHandler {
 
 	private EventRouter eventRouter;
-	private static javafx.scene.image.Image deleteImage;
+	private Image deleteImage;
 	private Pane clipListContent;
 	
 	public UserInterface(EventRouter eventRouter, Stage primaryStage) throws Exception {
@@ -32,38 +30,23 @@ public class UserInterface implements EventHandler {
 
 		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 		InputStream deleteImageFileInputStream = classLoader.getResourceAsStream("delete_16.png");
-		//FileInputStream deleteImageFileInputStream = new FileInputStream("resources/delete_16.png");
-		deleteImage = new javafx.scene.image.Image(deleteImageFileInputStream);
+		this.deleteImage = new Image(deleteImageFileInputStream);
 		deleteImageFileInputStream.close();
 
 		primaryStage.setTitle("ClipBin");
-
-		Label label1 = new Label("Welcome to the first scene!");
-
-		/*
-		Button alertButton = new Button("Alert");
-		alertButton.setOnAction(e -> {
-			boolean result = ConfirmBox.display("Confirm", "Are you sure?");
-			System.out.println("result: " + result);
-		});
-
-		Button closeButton = new Button("Close");
-		closeButton.setOnAction(e -> close(e));
-		*/
 		HBox topContent = new HBox();
+		// TODO create buttons to alter the clip layout, and bring up an "options" view
 		Label topLabel = new Label("Top");
 		topContent.getChildren().add(topLabel);
 
-		clipListContent = new VBox(8);
-		clipListContent.setPadding(new Insets(8));
+		this.clipListContent = new VBox(8);
+		this.clipListContent.setPadding(new Insets(8));
 		Label centerLabel = new Label("Center");
-		clipListContent.getChildren().add(centerLabel);
-
-		//refreshClips(clipBin.getClipList());
+		this.clipListContent.getChildren().add(centerLabel);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setTop(topContent);
-		borderPane.setCenter(clipListContent);
+		borderPane.setCenter(this.clipListContent);
 
 		Scene scene = new Scene(borderPane, 400, 800);
 		primaryStage.setScene(scene);
@@ -87,7 +70,7 @@ public class UserInterface implements EventHandler {
 			deleteButton.setMinSize(20, 20);
 			deleteButton.setPrefSize(20, 20);
 			deleteButton.setMaxSize(20, 20);
-			ImageView imageView = new ImageView(deleteImage);
+			ImageView imageView = new ImageView(this.deleteImage);
 			imageView.setFitHeight(16);
 			imageView.setPreserveRatio(true);
 			deleteButton.setGraphic(imageView);
@@ -111,7 +94,7 @@ public class UserInterface implements EventHandler {
 			});
 			deleteButton.setStyle("-fx-border-color: transparent; -fx-border-width: 0; -fx-background-radius: 0; -fx-background-color: transparent; -fx-font-size: 1em; /* 12 */ -fx-text-fill: #828282;");
 			clipContent.getChildren().addAll(clipButton, deleteButton);
-			clipListContent.getChildren().add(clipContent);
+			this.clipListContent.getChildren().add(clipContent);
 		});
 	}
 
@@ -123,23 +106,16 @@ public class UserInterface implements EventHandler {
 					childToRemove = child;
 			}
 			if (childToRemove != null)
-				clipListContent.getChildren().remove(childToRemove);
-		});
-	}
-
-	private void refreshClips(List<Clip> clipList) {
-		Platform.runLater(() -> {
-			clipListContent.getChildren().clear();
-			clipList.forEach(c -> addClip(c));
+				this.clipListContent.getChildren().remove(childToRemove);
 		});
 	}
 
 	@Override
 	public void handle (Event event) {
 		if (EventType.ADD_CLIP.equals(event.getEventType())) {
-			addClip(event.getClip());
+			this.addClip(event.getClip());
 		} else if (EventType.REMOVE_CLIP.equals(event.getEventType())) {
-			removeClip(event.getClip());
+			this.removeClip(event.getClip());
 		}
 	}
 }
