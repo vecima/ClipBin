@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -39,14 +40,16 @@ public class UserInterface implements EventHandler {
 		Label topLabel = new Label("Top");
 		topContent.getChildren().add(topLabel);
 
+		ScrollPane centerContentScrollPane = new ScrollPane();
+		centerContentScrollPane.pannableProperty().set(true);
+		centerContentScrollPane.fitToWidthProperty().set(true);
 		this.clipListContent = new VBox(8);
 		this.clipListContent.setPadding(new Insets(8));
-		Label centerLabel = new Label("Center");
-		this.clipListContent.getChildren().add(centerLabel);
+		centerContentScrollPane.setContent(this.clipListContent);
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setTop(topContent);
-		borderPane.setCenter(this.clipListContent);
+		borderPane.setCenter(centerContentScrollPane);
 
 		Scene scene = new Scene(borderPane, 400, 800);
 		primaryStage.setScene(scene);
