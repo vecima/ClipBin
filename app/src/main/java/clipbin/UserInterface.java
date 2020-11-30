@@ -3,6 +3,8 @@ package clipbin;
 import java.io.InputStream;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -24,6 +26,7 @@ public class UserInterface implements EventHandler {
 	private EventRouter eventRouter;
 	private Image deleteImage;
 	private Pane clipListContent;
+	private StringProperty currentBufferContentsString = new SimpleStringProperty();
 	
 	public UserInterface(EventRouter eventRouter, Stage primaryStage) throws Exception {
 		this.eventRouter = eventRouter;
@@ -37,8 +40,28 @@ public class UserInterface implements EventHandler {
 		primaryStage.setTitle("ClipBin");
 		HBox topContent = new HBox();
 		// TODO create buttons to alter the clip layout, and bring up an "options" view
-		Label topLabel = new Label("Top");
-		topContent.getChildren().add(topLabel);
+		Button listButton = new Button("List");
+		listButton.setMaxWidth(Double.MAX_VALUE);
+		listButton.setAlignment(Pos.BASELINE_LEFT);
+		listButton.setOnAction(e -> {
+			//TODO display as a list (default)
+		});
+		HBox.setHgrow(listButton, Priority.ALWAYS);
+		Button gridButton = new Button("Grid");
+		gridButton.setMaxWidth(Double.MAX_VALUE);
+		gridButton.setAlignment(Pos.BASELINE_LEFT);
+		gridButton.setOnAction(e -> {
+			//TODO display as a grid
+		});
+		HBox.setHgrow(gridButton, Priority.ALWAYS);
+		Button optionsButton = new Button("Options");
+		optionsButton.setMaxWidth(Double.MAX_VALUE);
+		optionsButton.setAlignment(Pos.BASELINE_LEFT);
+		optionsButton.setOnAction(e -> {
+			//TODO open options view
+		});
+		HBox.setHgrow(optionsButton, Priority.ALWAYS);
+		topContent.getChildren().addAll(listButton, gridButton, optionsButton);
 
 		ScrollPane centerContentScrollPane = new ScrollPane();
 		centerContentScrollPane.pannableProperty().set(true);
@@ -47,9 +70,17 @@ public class UserInterface implements EventHandler {
 		this.clipListContent.setPadding(new Insets(8));
 		centerContentScrollPane.setContent(this.clipListContent);
 
+		VBox bottomContent = new VBox(8);
+		bottomContent.setPadding(new Insets(8));
+		Label currentBufferContentsLabel = new Label("Current Buffer Contents:");
+		Label currentBufferContentsText = new Label("");
+		currentBufferContentsText.textProperty().bind(this.currentBufferContentsString);
+		bottomContent.getChildren().addAll(currentBufferContentsLabel, currentBufferContentsText);
+
 		BorderPane borderPane = new BorderPane();
 		borderPane.setTop(topContent);
 		borderPane.setCenter(centerContentScrollPane);
+		borderPane.setBottom(bottomContent);
 
 		Scene scene = new Scene(borderPane, 400, 800);
 		primaryStage.setScene(scene);
@@ -112,12 +143,22 @@ public class UserInterface implements EventHandler {
 		});
 	}
 
+	private void updateCurrentBufferContents(Clip clip) {
+		Platform.runLater(() -> {
+			System.out.println("handling content change in ui");
+			if (clip != null)
+				this.currentBufferContentsString.set(clip.getDisplay(0));
+		});
+	}
+
 	@Override
 	public void handle (Event event) {
 		if (EventType.ADD_CLIP.equals(event.getEventType())) {
 			this.addClip(event.getClip());
 		} else if (EventType.REMOVE_CLIP.equals(event.getEventType())) {
 			this.removeClip(event.getClip());
+		} else if (EventType.CLIPBOARD_CHANGED.equals(event.getEventType())) {
+			this.updateCurrentBufferContents(event.getClip());
 		}
 	}
 }

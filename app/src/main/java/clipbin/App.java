@@ -52,30 +52,39 @@ public class App extends Application {
 					Thread.sleep(500);
 
 					Clip clip = ClipboardManager.getClipboardContents();
-					if (clip != null) {						
-						boolean duplicate = false;
-						if (this.lastClipboardContents != null && this.lastClipboardContents.getDisplay(0).equals(clip.getDisplay(0)))
-							duplicate = true;
 
-						if (!duplicate) {
+					boolean changed = false;
+					if ((clip == null && this.lastClipboardContents != null)
+						|| (clip != null && this.lastClipboardContents == null)
+						|| !this.lastClipboardContents.getDisplay(0).equals(clip.getDisplay(0))) {
+						eventRouter.sendEvent(new Event(EventType.CLIPBOARD_CHANGED, clip));
+						changed = true;
+					}
+
+					if (changed) {
+						if (clip != null) {
+							this.lastClipboardContents = clip;
+							boolean duplicate = false;
 							for (Clip existingClip : this.clipBin.getClipList()) {
 								//System.out.println("checking " + clip.getDisplay(0) + " against " + existingClip.getDisplay(0));
 								if (clip.getDisplay(0).equals(existingClip.getDisplay(0)))
 									duplicate = true;
 							}
-						}
 
-						if (!duplicate) {
-							if (clip.save(path)) {
-								this.lastClipboardContents = clip;
-								Event addedClipEvent = new Event(EventType.ADD_CLIP, clip);
-								eventRouter.sendEvent(addedClipEvent);
-							} else {
-								this.listenToClipboard = false;
-								Platform.runLater(() -> {
-									AlertBox.display("Error", "The clip could not be saved. ClipBin has stopped watching the clipboard and should be restarted.");
-								});
+							if (!duplicate) {
+								if (clip.save(path)) {
+									this.lastClipboardContents = clip;
+									Event addedClipEvent = new Event(EventType.ADD_CLIP, clip);
+									eventRouter.sendEvent(addedClipEvent);
+								} else {
+									this.listenToClipboard = false;
+									Platform.runLater(() -> {
+										AlertBox.display("Error", "The clip could not be saved. ClipBin has stopped watching the clipboard and should be restarted.");
+									});
+								}
 							}
+						} else {
+							this.lastClipboardContents = null;
 						}
 					}
 				} catch (InterruptedException ie) {
